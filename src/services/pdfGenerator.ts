@@ -69,7 +69,8 @@ export const generarHojaServicioPDF = (ticket: Ticket, formData: FormData) => {
   });
 
   // --- SECCIONES DE CONTENIDO (Bloques limpios) ---
-  let currentY = (doc as any).lastAutoTable.finalY + 8;
+  const autoTableDocument = doc as jsPDF & { lastAutoTable: { finalY: number } };
+  let currentY = autoTableDocument.lastAutoTable.finalY + 8;
 
   const agregarSeccion = (titulo: string, contenido: string, alturaBox: number) => {
     doc.setFontSize(9);

@@ -1,91 +1,130 @@
-const app = require('./src/app');
-const sequelize = require('./src/config/database');
-const Ticket = require('./src/models/Ticket');
-const User = require('./src/models/User');
-require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
 
-async function iniciarServidor() {
-  try {
-    await sequelize.authenticate();
-    console.log('Conexión a la base de datos establecida.');
+require('dotenv').config({
+    path: path.resolve(__dirname, '.env')
+});
 
-    await sequelize.sync();
-    console.log('Base de datos sincronizada.');
+const healthRoutes = require('./routes/health.routes');
+const authRoutes = require('./routes/auth.routes');
+const ticketRoutes = require('./routes/ticket.routes');
+const sequelize = require('./config/database');
 
-    const totalTickets = await Ticket.count();
-
-    if (totalTickets === 0) {
-      await Ticket.bulkCreate([
-        {
-          id: 'T-1001',
-          title: 'Falla en servidor de ventas',
-          empresa: 'Acme S.A.',
-          status: 'Pendiente',
-          descripcion: 'El sistema de ventas presenta errores al generar reportes.'
-        },
-        {
-          id: 'T-1002',
-          title: 'Solicitud de actualización de módulo',
-          empresa: 'GlobalTech',
-          status: 'En proceso',
-          descripcion: 'Se requiere habilitar nuevas funciones de seguimiento.'
-        },
-        {
-          id: 'T-1003',
-          title: 'Consulta de acceso a reportes',
-          empresa: 'Innova',
-          status: 'Completado',
-          descripcion: 'Se resolvió el acceso para el equipo de operaciones.'
-        }
-      ]);
-    }
-
-    const demoUsers = [
-      {
-        name: 'Administrador',
-        email: 'admin@tickets.com',
-        password: 'admin123',
-        role: 'admin'
-      },
-      {
-        name: 'Técnico',
-        email: 'tecnico@tickets.com',
-        password: 'tec123',
-        role: 'tecnico'
-      },
-      {
-        name: 'Técnico 1',
-        email: 'tecnico1@tickets.com',
-        password: 'tec123',
-        role: 'tecnico'
-      },
-      {
-        name: 'Técnico 2',
-        email: 'tecnico2@tickets.com',
-        password: 'tec123',
-        role: 'tecnico'
-      }
-    ];
-
-    for (const userData of demoUsers) {
-      const [user] = await User.findOrCreate({
-        where: { email: userData.email },
-        defaults: userData
-      });
-    }
-
-    console.log('Usuarios de prueba verificados.');
-
-  } catch (error) {
-    console.error('Error al iniciar la base de datos:', error);
-  }
-}
-iniciarServidor();
+const app = express();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Servidor backend ejecutándose en http://localhost:${PORT}`);
+
+/*
+|--------------------------------------------------------------------------
+| VALIDAR CONFIGURACIÓN DE SEGURIDAD
+|--------------------------------------------------------------------------
+*/
+
+if (!process.env.JWT_SECRET) {
+    console.error(
+        'ERROR: JWT_SECRET no está configurado en el archivo .env'
+    );
+
+    process.exit(1);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| MIDDLEWARES
+|--------------------------------------------------------------------------
+*/
+
+app.use(
+    cors({
+        origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+        credentials: true
+    })
+);
+
+app.use(express.json());
+
+
+/*
+|--------------------------------------------------------------------------
+| RUTAS API
+|--------------------------------------------------------------------------
+*/
+
+app.use('/api/health', healthRoutes);
+
+app.use('/api/auth', authRoutes);
+
+app.use('/api/tickets', ticketRoutes);
+
+
+/*
+|--------------------------------------------------------------------------
+| RUTA PRINCIPAL
+|--------------------------------------------------------------------------
+*/
+
+app.get('/', (req, res) => {
+    res.json({
+        success: true,
+        message: 'Backend de Tickets funcionando correctamente'
+    });
 });
 
-module.exports = app;
+
+/*
+|--------------------------------------------------------------------------
+| INICIAR SERVIDOR
+|--------------------------------------------------------------------------
+*/
+
+const start = async () => {
+    try {
+
+        /*
+         * Verificar conexión con MySQL
+         */
+
+        await sequelize.authenticate();
+
+        console.log(
+            'Conexión con MySQL establecida correctamente'
+        );
+
+
+        /*
+         * Sincronizar modelos
+         */
+
+        await sequelize.sync();
+
+        console.log(
+            'Modelos sincronizados correctamente'
+        );
+
+
+        /*
+         * Iniciar servidor
+         */
+
+        app.listen(PORT, () => {
+            console.log(
+                `Servidor backend ejecutándose en http://localhost:${PORT}`
+            );
+        });
+
+    } catch (error) {
+
+        console.error(
+            'No se pudo iniciar el backend con MySQL:',
+            error.message
+        );
+
+        process.exit(1);
+    }
+};
+
+
+start();

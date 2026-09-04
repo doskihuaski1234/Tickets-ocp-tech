@@ -4,18 +4,23 @@ import type { Ticket, TicketStatus } from '../types/tickets';
 interface MisOrdenesProps {
   tickets: Ticket[];
   onUpdateStatus: (id: string, newStatus: TicketStatus) => void;
+  technicianLocation?: { lat: number; lng: number } | null;
 }
 
-export const MisOrdenes: React.FC<MisOrdenesProps> = ({ tickets, onUpdateStatus }) => {
-  const [ubicacionTecnico, setUbicacionTecnico] = useState<{ lat: number; lng: number } | null>(null);
-  const [errorUbicacion, setErrorUbicacion] = useState<string | null>(null);
+export const MisOrdenes: React.FC<MisOrdenesProps> = ({ tickets, onUpdateStatus, technicianLocation }) => {
+  const [browserLocation, setBrowserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const ubicacionTecnico = technicianLocation || browserLocation;
+  const [errorUbicacion, setErrorUbicacion] = useState<string | null>(() =>
+    'geolocation' in navigator ? null : 'Tu navegador no soporta geolocalización.'
+  );
 
-  // 1. Obtener la ubicación actual del técnico al cargar el componente
   useEffect(() => {
+    if (technicianLocation) return;
+
     if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setUbicacionTecnico({
+          setBrowserLocation({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
           });
@@ -26,10 +31,8 @@ export const MisOrdenes: React.FC<MisOrdenesProps> = ({ tickets, onUpdateStatus 
         },
         { enableHighAccuracy: true }
       );
-    } else {
-      setErrorUbicacion('Tu navegador no soporta geolocalización.');
     }
-  }, []);
+  }, [technicianLocation]);
 
   // Función auxiliar opcional para calcular distancia aproximada (Fórmula Haversine simplificada)
   const calcularDistanciaKm = (lat1: number, lon1: number, lat2: number, lon2: number) => {

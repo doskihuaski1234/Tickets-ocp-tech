@@ -71,23 +71,29 @@ export const SeccionHojasServicio: React.FC<Props> = ({ tickets }) => {
       };
 
       const token = localStorage.getItem('token');
+
+      if (!token) {
+        throw new Error('La sesión expiró. Inicia sesión nuevamente.');
+      }
+
+      await ticketService.update(
+        selectedTicket.id,
+        {
+          evidenceBefore: formData.evidenceBefore || null,
+          evidenceAfter: formData.evidenceAfter || null,
+          evidenceBeforeImage: formData.evidenceBeforeImage || null,
+          evidenceAfterImage: formData.evidenceAfterImage || null,
+          tecnico: formData.tecnico,
+          diagnostico: formData.diagnostico,
+          resultado: formData.resultado,
+          notification: `Evidencia guardada para la orden ${selectedTicket.id}`
+        },
+        token
+      );
+
       const currentStored = JSON.parse(localStorage.getItem('hojas_servicio_guardadas') || '{}');
       currentStored[selectedTicket.id] = hojaServicioCompleta;
       localStorage.setItem('hojas_servicio_guardadas', JSON.stringify(currentStored));
-
-      if (token) {
-        await ticketService.update(
-          selectedTicket.id,
-          {
-            evidenceBefore: formData.evidenceBefore || null,
-            evidenceAfter: formData.evidenceAfter || null,
-            evidenceBeforeImage: formData.evidenceBeforeImage || null,
-            evidenceAfterImage: formData.evidenceAfterImage || null,
-            notification: `Evidencia guardada para la orden ${selectedTicket.id}`
-          },
-          token
-        );
-      }
 
       console.log('Guardando Hoja de Servicio:', hojaServicioCompleta);
       alert('¡Hoja de servicio y evidencia guardadas con éxito!');

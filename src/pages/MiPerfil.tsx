@@ -29,7 +29,7 @@ export const MiPerfil: React.FC<MiPerfilProps> = ({ user, onProfileUpdated }) =>
     setMessage('');
 
     try {
-      const payload: any = { name, email };
+      const payload: Record<string, string> = { name, email };
 
       if (currentPassword) {
         payload.currentPassword = currentPassword;

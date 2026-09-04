@@ -6,6 +6,7 @@ export interface Ticket {
   description: string;
   status: TicketStatus;
   createdAt: string;
+  updatedAt?: string;
 
   empresa: string;
   sucursal: string;
@@ -21,6 +22,12 @@ export interface Ticket {
   evidenceBeforeImage?: string;
   evidenceAfterImage?: string;
 
-  lat: number;
-  lng: number;
+  lat?: number;
+  lng?: number;
+  createdBy?: string;
+  telefono?: string;
+  emailCliente?: string;
+  tecnico?: string;
+  diagnostico?: string;
+  resultado?: string;
 }

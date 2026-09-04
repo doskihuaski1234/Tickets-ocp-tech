@@ -12,7 +12,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   setCurrentTab,
   userRole,
 }) => {
-
   const adminItems: { id: TabType; label: string }[] = [
     { id: 'dashboard', label: 'Dashboard' },
     { id: 'tickets', label: 'Tickets' },
@@ -48,29 +47,53 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   return (
-    <aside className="h-full min-h-[calc(100vh-72px)] w-full border-r border-slate-200 bg-slate-50/80 p-3 lg:w-[270px]">
-      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
-        <p className="px-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">Navegación</p>
-        <ul className="mt-3 space-y-2">
+    <aside className="h-full min-h-screen w-full bg-slate-50 p-3">
+      <div className="h-full rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+
+        {/* Encabezado */}
+        <div className="px-2">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            Navegación
+          </p>
+
+          <p className="mt-1 text-xs text-slate-400">
+            Menú principal
+          </p>
+        </div>
+
+        {/* Menú */}
+        <ul className="mt-4 space-y-2">
           {visibleItems.map((item) => (
             <li key={item.id}>
               <button
                 type="button"
                 onClick={() => setCurrentTab(item.id)}
-                className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-medium transition-all ${
+                className={`group flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left text-sm font-medium transition-all duration-200 active:scale-[0.98] ${
                   currentTab === item.id
                     ? 'bg-slate-900 text-white shadow-lg shadow-slate-900/10'
                     : 'bg-slate-50 text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/10 text-base">
+                {/* Icono */}
+                <span
+                  className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-base transition-all duration-200 ${
+                    currentTab === item.id
+                      ? 'bg-white/10'
+                      : 'bg-white shadow-sm group-hover:bg-slate-200'
+                  }`}
+                >
                   {icons[item.id] || '•'}
                 </span>
-                {item.label}
+
+                {/* Texto */}
+                <span className="truncate">
+                  {item.label}
+                </span>
               </button>
             </li>
           ))}
         </ul>
+
       </div>
     </aside>
   );

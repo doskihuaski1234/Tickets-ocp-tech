@@ -32,3 +32,9 @@ dist-ssr
 # Environment variables
 .env
 backend/.env
+
+# Database backups
+backup-mysql/
+
+# VS Code workspace
+*.code-workspace
