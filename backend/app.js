@@ -49,6 +49,11 @@ app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/tickets', ticketRoutes);
 
+// Vercel puede entregar la ruta sin el prefijo /api al adaptador Express.
+app.use('/health', healthRoutes);
+app.use('/auth', authRoutes);
+app.use('/tickets', ticketRoutes);
+
 app.get('/', (req, res) => {
     res.json({
         success: true,
