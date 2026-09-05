@@ -1,5 +1,28 @@
 {
+  "services": [
+    {
+      "name": "frontend",
+      "rootDirectory": ".",
+      "framework": "vite"
+    },
+    {
+      "name": "backend",
+      "rootDirectory": "backend",
+      "framework": "express"
+    }
+  ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": {
+        "service": "backend"
+      }
+    },
+    {
+      "source": "/(.*)",
+      "destination": {
+        "service": "frontend"
+      }
+    }
   ]
 }
