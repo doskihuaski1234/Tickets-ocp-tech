@@ -1,5 +1,8 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
+
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const healthRoutes = require('./routes/health.routes');
 const authRoutes = require('./routes/auth.routes');
@@ -11,15 +14,15 @@ let databaseReady;
 
 const initializeDatabase = () => {
     if (!databaseReady) {
-        databaseReady = sequelize.authenticate().then(() => sequelize.sync());
+        if (sequelize.configurationError) {
+            databaseReady = Promise.reject(sequelize.configurationError);
+        } else {
+            databaseReady = sequelize.authenticate().then(() => sequelize.sync());
+        }
     }
 
     return databaseReady;
 };
-
-if (!process.env.JWT_SECRET) {
-    throw new Error('JWT_SECRET no está configurado');
-}
 
 app.set('trust proxy', 1);
 
@@ -46,13 +49,19 @@ app.use(express.json());
 
 app.use(async (req, res, next) => {
     try {
+        if (!process.env.JWT_SECRET) {
+            const error = new Error('Falta la variable JWT_SECRET');
+            error.status = 503;
+            throw error;
+        }
+
         await initializeDatabase();
         next();
     } catch (error) {
         console.error('No se pudo conectar con MySQL:', error.message);
         res.status(503).json({
             success: false,
-            message: 'La base de datos no está disponible'
+            message: error.message
         });
     }
 });
