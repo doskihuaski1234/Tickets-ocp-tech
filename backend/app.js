@@ -25,7 +25,19 @@ app.set('trust proxy', 1);
 
 app.use(
     cors({
-        origin: process.env.FRONTEND_URL || true,
+        origin: (origin, callback) => {
+            const allowedOrigins = (process.env.FRONTEND_URL || 'http://localhost:3000')
+                .split(',')
+                .map((value) => value.trim())
+                .map((value) => value.replace(/\/$/, ''))
+                .filter(Boolean);
+
+            if (!origin || allowedOrigins.includes(origin)) {
+                return callback(null, true);
+            }
+
+            return callback(new Error('Origen no permitido por CORS'));
+        },
         credentials: true
     })
 );
@@ -58,6 +70,25 @@ app.get('/', (req, res) => {
     res.json({
         success: true,
         message: 'Backend de Tickets funcionando correctamente'
+    });
+});
+
+app.use((req, res) => {
+    res.status(404).json({
+        success: false,
+        message: 'Ruta API no encontrada'
+    });
+});
+
+app.use((error, req, res, next) => {
+    if (res.headersSent) {
+        return next(error);
+    }
+
+    console.error('Error no controlado en la API:', error);
+    return res.status(error.status || 500).json({
+        success: false,
+        message: error.status ? error.message : 'Error interno del servidor'
     });
 });
 

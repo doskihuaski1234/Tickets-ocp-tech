@@ -62,31 +62,61 @@ const normalizeUser = (payload?: UserPayload) => ({
   name: payload?.name ?? payload?.nombre ?? 'Usuario',
 });
 
+const readResponse = async (response: Response): Promise<unknown> => {
+  const contentType = response.headers.get('content-type') || '';
+  const body = await response.text();
+
+  if (!body.trim()) {
+    return null;
+  }
+
+  if (!contentType.toLowerCase().includes('application/json')) {
+    throw new ApiError(
+      `El servidor respondió con contenido no JSON (HTTP ${response.status})`,
+      response.status
+    );
+  }
+
+  try {
+    return JSON.parse(body) as unknown;
+  } catch {
+    throw new ApiError(
+      `El servidor devolvió JSON inválido (HTTP ${response.status})`,
+      response.status
+    );
+  }
+};
+
 const request = async <T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> => {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  });
-
-  let data: unknown;
+  let response: Response;
 
   try {
-    data = await response.json();
-  } catch {
-    throw new Error('El servidor devolvió una respuesta inválida');
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
+      },
+    });
+  } catch (error) {
+    console.error('Error de red al comunicarse con la API:', error);
+    throw new Error('No se pudo conectar con el servidor de la API', { cause: error });
   }
+
+  const data = await readResponse(response);
 
   if (!response.ok) {
     const message =
       typeof data === 'object' && data !== null && 'message' in data
         ? String((data as { message?: string }).message)
-        : 'Ocurrió un error al comunicarse con el servidor';
+        : response.status === 404
+          ? 'La ruta API no existe en el servidor'
+          : response.status >= 500
+            ? 'El servidor encontró un error interno'
+            : 'Ocurrió un error al comunicarse con el servidor';
 
     if (response.status === 401) {
       localStorage.removeItem('token');
@@ -94,6 +124,10 @@ const request = async <T>(
     }
 
     throw new ApiError(message || 'Ocurrió un error al comunicarse con el servidor', response.status);
+  }
+
+  if (data === null) {
+    throw new ApiError('El servidor devolvió una respuesta vacía', response.status);
   }
 
   return data as T;
