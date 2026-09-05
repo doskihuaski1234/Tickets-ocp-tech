@@ -12,18 +12,25 @@
   "dependencies": {
     "@prisma/client": "^7.8.0",
     "@react-google-maps/api": "^2.20.8",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
     "framer-motion": "^12.40.0",
+    "jsonwebtoken": "^9.0.3",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^1.16.0",
     "mapbox-gl": "^3.26.0",
+    "mysql2": "^3.24.3",
     "prisma": "^7.8.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-icons": "^5.7.0",
     "react-map-gl": "^8.1.1",
     "react-router-dom": "^7.15.0",
-    "recharts": "^3.10.0"
+    "recharts": "^3.10.0",
+    "sequelize": "^6.37.8"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

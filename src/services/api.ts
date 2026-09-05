@@ -1,4 +1,5 @@
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '') || 'http://localhost:5000/api';
+const configuredApiUrl = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, '');
+const API_URL = configuredApiUrl || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 export class ApiError extends Error {
   status: number;
