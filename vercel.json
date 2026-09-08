@@ -8,6 +8,22 @@
       "dest": "/api/[...path].js"
     },
     {
+      "src": "/health",
+      "dest": "/api/health"
+    },
+    {
+      "src": "/health/(.*)",
+      "dest": "/api/health/$1"
+    },
+    {
+      "src": "/auth/(.*)",
+      "dest": "/api/auth/$1"
+    },
+    {
+      "src": "/tickets/(.*)",
+      "dest": "/api/tickets/$1"
+    },
+    {
       "handle": "filesystem"
     },
     {
